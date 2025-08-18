@@ -185,6 +185,7 @@ type Author struct {
 type Book struct {
 	ID         uint   `gorm:"primaryKey" json:"id"`
 	Title      string `json:"title"`
+	Name       string  `json:"name"`
 	CategoryID uint   `json:"category_id"`
 	AuthorID   uint   `json:"author_id"`
 
@@ -199,7 +200,7 @@ var db *gorm.DB
 var err error
 
 func initDB() {
-	dsn := "host=localhost user=postgres password=12345 dbname=library port=5432 sslmode=disable"
+	dsn := "host=localhost user=postgres password=12345 dbname=postgres port=5432 sslmode=disable"
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("❌ Databasega ulanib bo‘lmadi!")
@@ -209,7 +210,10 @@ func initDB() {
 	db.AutoMigrate(&Category{}, &Author{}, &Book{})
 }
 
+
 // ==== HANDLERLAR ====
+
+//  Categoriya 
 func createCategory(c *gin.Context) {
 	var category Category
 	if err := c.ShouldBindJSON(&category); err != nil {
@@ -229,6 +233,21 @@ func getCategories(c *gin.Context) {
 }
 
 
+func getCategoryByID(c *gin.Context) {
+    id := c.Param("id") // URL dan id olish
+
+    var category Category
+    // GORM bilan bazadan qidirish
+    if err := db.Preload("Books").First(&category, id).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Category not found"})
+        return
+    }
+
+    c.JSON(http.StatusOK, category)
+}
+
+
+//  Authorlar 
 func createAuthor(c *gin.Context) {
 	var author Author
 	if err := c.ShouldBindJSON(&author); err != nil {
@@ -246,7 +265,7 @@ func getAuthors(c *gin.Context) {
 	c.JSON(http.StatusOK, authors)
 }
 
-
+//  Books
 func createBook(c *gin.Context) {
 	var book Book
 	if err := c.ShouldBindJSON(&book); err != nil {
@@ -265,6 +284,8 @@ func getBooks(c *gin.Context) {
 }
 
 
+
+
 // ==== MAIN ====
 func main() {
 	initDB()
@@ -274,6 +295,7 @@ func main() {
 	// Category
 	r.POST("/categories", createCategory)
 	r.GET("/categories", getCategories)
+	r.GET("/categories/:id", getCategoryByID)
 
 	// Author
 	r.POST("/authors", createAuthor)
