@@ -1,0 +1,180 @@
+definitions:
+  main.Author:
+    properties:
+      books:
+        description: 1 author → ko‘p book
+        items:
+          $ref: '#/definitions/main.Book'
+        type: array
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  main.Book:
+    properties:
+      author:
+        $ref: '#/definitions/main.Author'
+      author_id:
+        type: integer
+      category:
+        $ref: '#/definitions/main.Category'
+      category_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      title:
+        type: string
+    type: object
+  main.Category:
+    properties:
+      books:
+        description: 1 category → ko‘p book
+        items:
+          $ref: '#/definitions/main.Book'
+        type: array
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /authors:
+    get:
+      description: Bazadagi barcha Authorlarni chiqaradi
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Author'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Barcha Authorlarni olish
+      tags:
+      - authors
+    post:
+      consumes:
+      - application/json
+      description: Bazaga yangi Author qo‘shadi
+      parameters:
+      - description: Author qo‘shish modeli
+        in: body
+        name: author
+        required: true
+        schema:
+          $ref: '#/definitions/main.Author'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.Author'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Yangi Author yaratish
+      tags:
+      - authors
+  /books:
+    get:
+      consumes:
+      - application/json
+      description: Bazadagi barcha Booklarni Category va Author bilan birga chiqaradi
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Book'
+            type: array
+      summary: Barcha Booklarni olish
+      tags:
+      - books
+    post:
+      consumes:
+      - application/json
+      description: Bazaga yangi Book qo‘shadi (category_id va author_id kerak bo‘ladi)
+      parameters:
+      - description: Book qo‘shish modeli
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/main.Book'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.Book'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Yangi Book yaratish
+      tags:
+      - books
+  /categories:
+    get:
+      description: Bazadagi barcha kategoriyalarni chiqaradi
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Category'
+            type: array
+      summary: Barcha kategoriyalarni olish
+      tags:
+      - categories
+    post:
+      consumes:
+      - application/json
+      description: Bazaga yangi Category qo‘shadi
+      parameters:
+      - description: Category qo‘shish modeli
+        in: body
+        name: category
+        required: true
+        schema:
+          $ref: '#/definitions/main.Category'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.Category'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Yangi Category yaratish
+      tags:
+      - categories
+swagger: "2.0"

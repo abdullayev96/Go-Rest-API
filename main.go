@@ -164,6 +164,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	docs "Task_manager_API_GO/docs" // shu yerga sizning module nomingiz
+    ginSwagger "github.com/swaggo/gin-swagger"
+    "github.com/swaggo/files"
+
 )
 
 
@@ -185,7 +190,7 @@ type Author struct {
 type Book struct {
 	ID         uint   `gorm:"primaryKey" json:"id"`
 	Title      string `json:"title"`
-	Name       string  `json:"name"`
+	Name       string `json:"name"`
 	CategoryID uint   `json:"category_id"`
 	AuthorID   uint   `json:"author_id"`
 
@@ -214,6 +219,18 @@ func initDB() {
 // ==== HANDLERLAR ====
 
 //  Categoriya 
+
+
+// createCategory godoc
+// @Summary      Yangi Category yaratish
+// @Description  Bazaga yangi Category qo‘shadi
+// @Tags         categories
+// @Accept       json
+// @Produce      json
+// @Param        category  body      Category  true  "Category qo‘shish modeli"
+// @Success      201  {object}  Category
+// @Failure      400  {object}  map[string]string
+// @Router       /categories [post]
 func createCategory(c *gin.Context) {
 	var category Category
 	if err := c.ShouldBindJSON(&category); err != nil {
@@ -226,6 +243,13 @@ func createCategory(c *gin.Context) {
 
 
 
+// getCategories godoc
+// @Summary      Barcha kategoriyalarni olish
+// @Description  Bazadagi barcha kategoriyalarni chiqaradi
+// @Tags         categories
+// @Produce      json
+// @Success      200  {array}  Category
+// @Router       /categories [get]
 func getCategories(c *gin.Context) {
 	var categories []Category
 	db.Preload("Books").Find(&categories)
@@ -233,6 +257,14 @@ func getCategories(c *gin.Context) {
 }
 
 
+
+// getCategories godoc
+// @Summary      Barcha kategoriyalarni olish
+// @Description  Bazadagi barcha kategoriyalarni chiqaradi
+// @Tags         categories
+// @Produce      json
+// @Success      200  {array}  Category
+// @Router       /categories [get]
 func getCategoryByID(c *gin.Context) {
     id := c.Param("id") // URL dan id olish
 
@@ -247,7 +279,17 @@ func getCategoryByID(c *gin.Context) {
 }
 
 
-//  Authorlar 
+
+// createAuthor godoc
+// @Summary      Yangi Author yaratish
+// @Description  Bazaga yangi Author qo‘shadi
+// @Tags         authors
+// @Accept       json
+// @Produce      json
+// @Param        author  body      Author  true  "Author qo‘shish modeli"
+// @Success      201  {object}  Author
+// @Failure      400  {object}  map[string]string
+// @Router       /authors [post]
 func createAuthor(c *gin.Context) {
 	var author Author
 	if err := c.ShouldBindJSON(&author); err != nil {
@@ -259,13 +301,36 @@ func createAuthor(c *gin.Context) {
 }
 
 
+// getAuthors godoc
+// @Summary      Barcha Authorlarni olish
+// @Description  Bazadagi barcha Authorlarni chiqaradi
+// @Tags         authors
+// @Produce      json
+// @Success      200  {array}  Author
+// @Failure      404  {object}  map[string]string
+// @Router       /authors [get]
 func getAuthors(c *gin.Context) {
 	var authors []Author
 	db.Preload("Books").Find(&authors)
 	c.JSON(http.StatusOK, authors)
 }
 
+
+
+
+
 //  Books
+
+// createBook godoc
+// @Summary      Yangi Book yaratish
+// @Description  Bazaga yangi Book qo‘shadi (category_id va author_id kerak bo‘ladi)
+// @Tags         books
+// @Accept       json
+// @Produce      json
+// @Param        book  body      Book  true  "Book qo‘shish modeli"
+// @Success      201  {object}  Book
+// @Failure      400  {object}  map[string]string
+// @Router       /books [post]
 func createBook(c *gin.Context) {
 	var book Book
 	if err := c.ShouldBindJSON(&book); err != nil {
@@ -277,6 +342,14 @@ func createBook(c *gin.Context) {
 }
 
 
+// getBooks godoc
+// @Summary      Barcha Booklarni olish
+// @Description  Bazadagi barcha Booklarni Category va Author bilan birga chiqaradi
+// @Tags         books
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   Book
+// @Router       /books [get]
 func getBooks(c *gin.Context) {
 	var books []Book
 	db.Preload("Category").Preload("Author").Find(&books)
@@ -291,6 +364,9 @@ func main() {
 	initDB()
 
 	r := gin.Default()
+
+	docs.SwaggerInfo.BasePath = "/"
+    r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Category
 	r.POST("/categories", createCategory)
